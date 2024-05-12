@@ -195,6 +195,9 @@
 
 #define kdlsym_addr_nd6_llinfo_timer 0xffffffff82404e00
 
+#define kdlsym_addr_Xill 0xffffffff824d2370
+#define kdlsym_addr_setidt 0xffffffff8245bdb0
+
 #define kdlsym_addr_kernel_map 0xffffffff843ff130
 #define kdlsym_addr_kmem_alloc 0xffffffff82445e10
 #define kdlsym_addr_vm_map_protect 0xffffffff8255c710
